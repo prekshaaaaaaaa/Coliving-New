@@ -20,29 +20,31 @@ export default function LoginScreens({ navigation }) {
     const { email, password } = form;
 
     if (!email || !password) {
-      Alert.alert("Missing Information", "Please enter both email and password");
+      Alert.alert(
+        "Missing Information",
+        "Please enter both email and password"
+      );
       return;
     }
 
     try {
-      console.log('Attempting sign in for', email);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      console.log('Firebase signIn success:', user.uid);
 
       const idTokenResult = await user.getIdTokenResult(true);
       const role = idTokenResult.claims.role || null;
-      console.log('Token claims:', idTokenResult.claims);
 
-      if (role) await AsyncStorage.setItem('userRole', role);
+      if (role) await AsyncStorage.setItem("userRole", role);
 
-      // Reset navigation stack to avoid splash/Welcome re-appearing
-      const target = role === 'flatmate' ? 'Resident' : role === 'roommate' ? 'Roommate' : 'Query';
-    
-      navigation.reset({ index: 0, routes: [{ name: target }] });
+      if (role === "flatmate") navigation.replace("Resident");
+      else if (role === "roommate") navigation.replace("Roommate");
+      else navigation.replace("Query");
     } catch (error) {
-      console.error('Login failed:', error);
-      Alert.alert('Login Failed', error.message || String(error));
+      Alert.alert("Login Failed", error.message);
     }
   };
 
@@ -57,7 +59,7 @@ export default function LoginScreens({ navigation }) {
         style={[
           styles.input,
           {
-            borderBottomColor: colors.primary,
+            borderBottomColor: isDarkMode ? colors.primary : "#e03a8f", // darker pink in light mode
             color: colors.text,
           },
         ]}
@@ -72,7 +74,7 @@ export default function LoginScreens({ navigation }) {
         style={[
           styles.input,
           {
-            borderBottomColor: colors.primary,
+            borderBottomColor: isDarkMode ? colors.primary : "#e03a8f", // darker pink in light mode
             color: colors.text,
           },
         ]}
@@ -87,7 +89,7 @@ export default function LoginScreens({ navigation }) {
         style={[
           styles.button,
           {
-            backgroundColor: colors.primaryButton,
+            backgroundColor: isDarkMode ? colors.primaryButton : "#e03a8f", // darker pink in light mode
             ...(isDarkMode && {
               shadowColor: colors.primaryButton,
               shadowOffset: { width: 0, height: 0 },
@@ -116,7 +118,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   toggleContainer: {
-    // removed: theme toggle was removed from Login screen
+    position: "absolute",
+    top: 50,
+    right: 20,
+    zIndex: 10,
   },
   text: {
     fontSize: 50,
